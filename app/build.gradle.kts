@@ -3,12 +3,16 @@ plugins {
 }
 
 android {
-    namespace = "com.example.android_2026_1"
-    compileSdk = 36
+    namespace = "com.example.week4"
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
-        applicationId = "com.example.android_2026_1"
-        minSdk = 26
+        applicationId = "com.example.week4"
+        minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
