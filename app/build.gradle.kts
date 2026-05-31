@@ -33,6 +33,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    //Gradle이 XML레이아웃 파일을 분석해 클래스를 생성해 View를 binding 객체로 접근 가능하게 함
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -44,4 +49,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.fragment)//Fragment 클래스 사용을 위한 라이브러리 추가
 }
