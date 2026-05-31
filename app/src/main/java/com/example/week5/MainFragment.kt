@@ -57,5 +57,14 @@ class MainFragment : Fragment() {
                 .addToBackStack(null)
                 .commit()
         }
+
+        listenForCountResult()//view 생성 후에 데이터를 읽음
+    }
+
+    private fun listenForCountResult() {//count값 읽기
+        parentFragmentManager.setFragmentResultListener("countKey", viewLifecycleOwner) { _, result ->
+            count = result.getInt("updatedCount")
+            binding.textViewCount.text = count.toString()
+        }
     }
 }

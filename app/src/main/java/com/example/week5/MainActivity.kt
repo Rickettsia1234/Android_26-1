@@ -37,15 +37,27 @@ class MainActivity : AppCompatActivity() {
 
         val onBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (supportFragmentManager.backStackEntryCount > 0) {//뒤로 돌아갈 Fragment가 있는지
+                if (supportFragmentManager.backStackEntryCount > 0) {//앞의 Fragment 확인
+                    val currentFragment = supportFragmentManager.fragments.lastOrNull()
+
+                    if (currentFragment is MainFragment2) {
+                        sendCountData(currentFragment)
+                    }
+
                     supportFragmentManager.popBackStack()
                 } else {
                     finish()
                 }
             }
         }
-
         //Activity와 같은 생명주기를 가지게 하고 뒤로가기 콜백 객체를 변수로 찾아 넣으줌
         onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
+    }
+
+    private fun sendCountData(mainFragment2: MainFragment2) {//count 값 보내기
+        val receivedCount = mainFragment2.getReceivedCount()
+        supportFragmentManager.setFragmentResult("countKey", Bundle().apply {
+            putInt("updatedCount", receivedCount)
+        })
     }
 }

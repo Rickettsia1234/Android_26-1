@@ -32,4 +32,8 @@ class MainFragment2 : Fragment() {
         binding.textViewRandomResult.text = receivedCount.toString()
 
     }
+
+    fun getReceivedCount(): Int {//count값 getter
+        return receivedCount
+    }
 }
