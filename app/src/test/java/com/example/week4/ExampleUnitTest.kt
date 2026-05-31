@@ -1,4 +1,4 @@
-package com.example.android_2026_1
+package com.example.week4
 
 import org.junit.Test
 
