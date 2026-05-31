@@ -33,20 +33,20 @@ class MainFragment : Fragment() {
 
         binding.buttonAlertDialog.setOnClickListener {
             AlertDialog.Builder(requireContext())
-                .setTitle("setTitle")
-                .setMessage("setMessage")
-                .setPositiveButton("setPositiveButton") { _, _ ->
+                .setTitle(R.string.alert_dialog_title)
+                .setMessage(R.string.alert_dialog_message)
+                .setPositiveButton(R.string.alert_dialog_positive) { _, _ ->
                     count = 0
                     binding.textViewCount.text = count.toString()
                 }
-                .setNeutralButton("setNeutralButton") { _, _ ->
-                    Toast.makeText(requireContext(), "Toast message", Toast.LENGTH_SHORT).show()
+                .setNeutralButton(R.string.alert_dialog_neutral) { _, _ ->
+                    Toast.makeText(requireContext(), R.string.toast_message, Toast.LENGTH_SHORT).show()
                 }
-                .setNegativeButton("setNegativeButton") { _, _ -> }
+                .setNegativeButton(R.string.alert_dialog_negative) { _, _ -> }
                 .show()
         }
 
-        binding.buttonRandom.setOnClickListener {
+        binding.buttonRandom.setOnClickListener {//Bundle방식을 통한 count값 전달
             val mainFragment2 = MainFragment2().apply {
                 arguments = Bundle().apply {
                     putInt("count", count)
@@ -61,7 +61,7 @@ class MainFragment : Fragment() {
         listenForCountResult()//view 생성 후에 데이터를 읽음
     }
 
-    private fun listenForCountResult() {//count값 읽기
+    private fun listenForCountResult() {//Fragment Result API를 사용한 count값 읽기
         parentFragmentManager.setFragmentResultListener("countKey", viewLifecycleOwner) { _, result ->
             count = result.getInt("updatedCount")
             binding.textViewCount.text = count.toString()

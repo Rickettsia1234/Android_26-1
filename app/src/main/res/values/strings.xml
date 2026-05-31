@@ -4,9 +4,14 @@
 
     <string name="zero">0</string>
     <string name="btn_count_text">Count</string>
-    <string name="btn_alert_dialog_text">AlertDialog</string>
+    <string name="btn_alert_dialog_text">Reset Count</string>
     <string name="btn_random_text">Random</string>
-    <string name="toast_message">toast message</string>
+    <string name="toast_message">Toast message</string>
+    <string name="alert_dialog_title">Count to 0</string>
+    <string name="alert_dialog_message">are you sure?</string>
+    <string name="alert_dialog_positive">Yes</string>
+    <string name="alert_dialog_negative">No</string>
+    <string name="alert_dialog_neutral">Toast</string>
 
     <string name="random_message">Here is a random number between 0 and %d</string>
 </resources>
