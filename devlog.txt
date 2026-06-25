@@ -1,0 +1,32 @@
+RecyclerView 실습 프로그램
+
+레이아웃, 어댑터, 액티비티 순으로 제작
+
+1.
+activity_main.xml
+상단의 입력창, 중앙 목록, 하단 추가 버튼 배치 용도
+추가 버튼의 경우 시각장애인 화면읽기 도구 사용을 위한 이름을 strings.xml에 추가해야 함 << 안드로이드 접근성검사
+
+item_name.xml
+리사이클러뷰 레이아웃
+접두사 item : 아이템을 모아두는 것, 식별자 _name : 이름만 보관함
+성능을 위해 리니어레이아웃을 사용함
+
+dialog_edit.xml
+수정용 다이얼로그 _edit
+
+dialog_delete.xml
+삭제용 다이얼로그 _delete
+
+2.
+NameAdapter.kt
+어댑터 클래스를 작성함
+CamelCase + 리스트의 값이 이름
+
+3.
+MainActivity.kt
+어뎁터를 적용하고 데이터 추가, 삭제 로직을 구현
+
+4.
+뷰 바인딩 적용
+상수 없어서 컴패니언 오브젝트 미사용 함
