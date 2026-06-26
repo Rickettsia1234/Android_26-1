@@ -9,4 +9,12 @@
     <string name="toast_message">toast message</string>
 
     <string name="random_message">Here is a random number between 0 and %d</string>
+
+    <string name="permission_denied">알림 권한이 거부되었습니다.</string>
+    <string name="channel_name">CustomNotificationChannel</string>
+    <string name="notification_title">앱 알림</string>
+    <string name="notification_content">현재 카운트: %1$d</string>
+    <string name="notification_default_content">알림 내용</string>
+    <string name="btn_more_text">더보기</string>
+    <string name="btn_close_text">닫기</string>
 </resources>

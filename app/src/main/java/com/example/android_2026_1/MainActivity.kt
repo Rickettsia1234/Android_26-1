@@ -1,108 +1,166 @@
 package com.example.android_2026_1
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.widget.Button
-import android.widget.TextView
+import android.widget.RemoteViews
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.android_2026_1.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
-    private val TAG = "LifecycleTest"
-    var count: Int = 0
-    lateinit var textViewCount: TextView//지연 초기화로 나중에 선언 하게 함
-    val activityResultLauncher = registerForActivityResult(//콜백 통로 설정하는 함수
-        /*
-            registerForActivityResult :
-                결과를 받기 위한 액티비티를 등록하는 함수
-                생명주기에서 현재 액티비티를 지우지 못하게 하기 위함
-            ActivityResultContracts :
-                액티비티 간 상호작용 시 타입 안정성을 위한 추상화된 계약 인터페이스 집합
-                ActivityResultContracts :
-                    다른 액티비티를 지정하고, 데이터를 돌려받는 계약 형식
-        */
+
+    private lateinit var binding: ActivityMainBinding
+    private var count: Int = 0
+
+    private val activityResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result ->//다음 화면이 닫히면 해당 블록을 실행함
-        if(result.resultCode == RESULT_OK) {
-            count = result.data?.getIntExtra("RETURN_COUNT", 0) ?: 0
-            //엘비스 연산자를 사용해서 0을 기본값으로 가짐
-            textViewCount.text = count.toString()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            count = result.data?.getIntExtra(EXTRA_RETURN_COUNT, 0) ?: 0
+            binding.textViewCount.text = count.toString()
         }
     }
 
-    fun showToastMessage(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
-
-    fun changeActivityWithCount() {
-        val intent = Intent(this, MainActivity2::class.java)
-        //intent에 출발지, 목적지를 넣는다.
-        intent.putExtra("INTENT_COUNT", count)
-        //이름, 변수를 묶어 맵 자료구조와 유사한 Bundle 자료구조에 넣는다
-        activityResultLauncher.launch(intent)
-        //intent를 발송한다
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            showNotificationWithCount()
+        } else {
+            Toast.makeText(this, getString(R.string.permission_denied), Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        createNotificationChannel()
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        Log.d(TAG, "onCreate")
-        textViewCount = findViewById(R.id.textView_count)
-        val buttonCount = findViewById<Button>(R.id.button_count)//var 이 아니라 val 사용
-        /*
-            findViewById : id를 이용해 주소값을 찾아 대입하는 함수
-            <컴포넌트 타입> (id) R : 리소스의 약자, 모든 리소스 id : 고유 식별자
-            Alt + Enter 로 모듈 가져올 수 있음
-         */
-        val buttonToast = findViewById<Button>(R.id.button_toast)
-        val buttonRandom = findViewById<Button>(R.id.button_random)
 
-        buttonCount.setOnClickListener {//함수의 마지막 인자가 람다식일 경우{} 소괄호 생략 가능
+        binding.buttonCount.setOnClickListener {
             count++
-            textViewCount.text = count.toString()
+            binding.textViewCount.text = count.toString()
         }
 
-        buttonToast.setOnClickListener {
-            showToastMessage(getString(R.string.toast_message))
+        binding.buttonToast.setOnClickListener {
+            Toast.makeText(this, getString(R.string.toast_message), Toast.LENGTH_SHORT).show()
         }
 
-        buttonRandom.setOnClickListener {
-            changeActivityWithCount()
+        binding.buttonRandom.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    showNotificationWithCount()
+                } else {
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            } else {
+                showNotificationWithCount()
+            }
         }
 
-    }override fun onStart() {
-        super.onStart()
-        Log.d(TAG, "onStart")
+        handleIntent(intent)
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.d(TAG, "onResume")
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
     }
 
-    override fun onPause() {
-        super.onPause()
-        Log.d(TAG, "onPause")
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == ACTION_LAUNCH_MAIN2) {
+            val countExtra = intent.getIntExtra(EXTRA_INTENT_COUNT, 0)
+            val main2Intent = Intent(this, MainActivity2::class.java).apply {
+                putExtra(EXTRA_INTENT_COUNT, countExtra)
+            }
+            activityResultLauncher.launch(main2Intent)
+        }
     }
 
-    override fun onStop() {
-        super.onStop()
-        Log.d(TAG, "onStop")
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.channel_name)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance)
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d(TAG, "onDestroy")
+    private fun showNotificationWithCount() {
+        val notificationBinding = com.example.android_2026_1.databinding.NotificationBinding.inflate(layoutInflater)
+        val remoteViews = RemoteViews(packageName, R.layout.notification).apply {
+            setTextViewText(notificationBinding.tvTitle.id, getString(R.string.notification_title))
+            setTextViewText(notificationBinding.tvContent.id, getString(R.string.notification_content, count))
+
+
+            val moreIntent = Intent(this@MainActivity, NotificationReceiver::class.java).apply {
+                action = ACTION_MORE
+                putExtra(EXTRA_INTENT_COUNT, count)
+            }
+            val morePendingIntent = PendingIntent.getBroadcast(
+                this@MainActivity,
+                0,
+                moreIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            setOnClickPendingIntent(notificationBinding.btnMore.id, morePendingIntent)
+
+            val closeIntent = Intent(this@MainActivity, NotificationReceiver::class.java).apply {
+                action = ACTION_CLOSE
+                putExtra(EXTRA_NOTIFICATION_ID, NOTIFICATION_ID)
+            }
+            val closePendingIntent = PendingIntent.getBroadcast(
+                this@MainActivity,
+                1,
+                closeIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            setOnClickPendingIntent(notificationBinding.btnClose.id, closePendingIntent)
+        }
+
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomBigContentView(remoteViews)
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(NOTIFICATION_ID, builder.build())
+    }
+
+    companion object {
+        const val CHANNEL_ID = "notification_channel"
+        const val NOTIFICATION_ID = 1
+        const val ACTION_MORE = "ACTION_MORE"
+        const val ACTION_CLOSE = "ACTION_CLOSE"
+        const val ACTION_LAUNCH_MAIN2 = "ACTION_LAUNCH_MAIN2"
+        const val EXTRA_NOTIFICATION_ID = "NOTIFICATION_ID"
+        const val EXTRA_INTENT_COUNT = "INTENT_COUNT"
+        const val EXTRA_RETURN_COUNT = "RETURN_COUNT"
     }
 }
