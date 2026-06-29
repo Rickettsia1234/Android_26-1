@@ -1,0 +1,17 @@
+음악 플레이어 실습
+
+기기의 음악을 MediaStore로 읽어 RecyclerView로 리스팅
+화면 하단에 재생중인 음악을 표시할 UI 구현
+권한 취득, 실패시 알림과 설정으로 가는 버튼 생성 -> 프래그먼트 교체로 구현
+RecyclerView의 버튼들에 음악 재생 기능을 구현
+지워지지 않는 알림 띄우기
+
+1. AndroidManifest.xml에 권한 선언
+2. MainActivity 레이아웃 구성
+3. 권한 요청 구현
+4. MediaStore 데이터 조회 및 RecyclerView 구현
+5. 포그라운드 서비스 클래스 생성
+6. 알림채널 및 알림 생성
+7. MediaPlayer 초기화 및 제어 코드 작성
+8. RecyclerView 아이템 클릭 이벤트 연결
+9. 화면 하단 미니 플레이어 UI 연동
