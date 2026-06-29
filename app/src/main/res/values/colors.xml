@@ -2,4 +2,6 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gray_write">#FFEEEEEE</color>
+    <color name="gray_medium">#FF666666</color>
 </resources>

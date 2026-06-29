@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">android_2026_1</string>
+    <string name="perm_desc_read_audio">Allow permission to show files</string>
+    <string name="btn_open_settings">Open Settings</string>
+    <string name="msg_no_current_track">재생 중인 음악이 없습니다</string>
+
 </resources>
