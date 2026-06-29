@@ -34,7 +34,6 @@
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_layout豎_toTopOf="@id/layoutBottomPlayer"
             app:layout_constraintBottom_toTopOf="@id/layoutBottomPlayer"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -45,7 +44,9 @@
             android:background="@color/gray_write"
             android:orientation="vertical"
             android:padding="8dp"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
             <TextView
                 android:id="@+id/tvBottomTitle"
