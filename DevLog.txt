@@ -15,3 +15,49 @@ RecyclerView의 버튼들에 음악 재생 기능을 구현
 7. MediaPlayer 초기화 및 제어 코드 작성
 8. RecyclerView 아이템 클릭 이벤트 연결
 9. 화면 하단 미니 플레이어 UI 연동
+
+MusicService.kt
+onBind
+    바운드 서비스가 아니므로 null
+onCreate
+    알림 채널 등록 함수 실행
+onStartCommand
+    포그라운드/백그라운드 명령 처리
+playMusic
+    MediaPlayer 메모리 및 실행 처리
+stopMusic
+    메모리 처리
+createNotification
+    알림객체 생성용, intent 설정
+createNotificationChannel
+    알림채널 구축
+onDestroy
+    음악 리소스 해제
+
+MusicAdapter.kt
+onCreateViewHolder
+    뷰바인딩-뷰홀더 생성
+onBindViewHolder
+    뷰바인딩 설정 및 콜백함수 호출
+getItemCount
+    뷰 크기 반환용
+
+MainActivity.kt
+onCreate
+    뷰바인딩 초기화, 권한체크
+onResume
+    권한 상태 확인 및 UI 갱신
+checkMusicPermission
+    이름그대로
+setupMusicPlayer
+    UI갱신 및 리사이클러뷰 초기화, 어댑터 연결, 알림 권한 체크
+checkNotificationPermission
+    이름그대로
+showPermissionDeniedUI
+    이름그대로
+loadMusicFiles
+    ContentResolver와 MediaStore 사용
+startMusicService
+    음악 정보를 인텐트에 담아 서비스 포그라운드로 실행
+updateBottomPlayer
+    이름그대로
