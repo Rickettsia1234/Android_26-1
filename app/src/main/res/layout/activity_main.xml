@@ -8,52 +8,62 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/textViewTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView"
+        android:text="@string/default_time"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayoutButtons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.25" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="409dp"
-        android:layout_height="426dp"
+        android:id="@+id/recyclerViewLaps"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/linearLayoutButtons" />
 
     <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="409dp"
-        android:layout_height="231dp"
-        android:layout_marginTop="1dp"
+        android:id="@+id/linearLayoutButtons"
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/recyclerView"
+        android:gravity="center"
+        android:padding="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/recyclerViewLaps"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView">
+        app:layout_constraintTop_toBottomOf="@+id/textViewTime">
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/buttonStartPause"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="Button" />
+            android:layout_marginEnd="8dp"
+            android:text="@string/btn_start" />
 
         <Button
-            android:id="@+id/button2"
+            android:id="@+id/buttonStop"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:layout_marginEnd="8dp"
+            android:text="@string/btn_stop" />
 
         <Button
-            android:id="@+id/button3"
+            android:id="@+id/buttonLap"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:text="@string/btn_lap" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

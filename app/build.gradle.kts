@@ -3,6 +3,9 @@ plugins {
 }
 
 android {
+    viewBinding {
+        enable = true
+    }
     namespace = "com.example.android_2026_1"
     compileSdk = 36
 
