@@ -1,3 +1,17 @@
 <resources>
-    <string name="app_name">android_2026_1</string>
+    <string name="app_name">단어장</string>
+
+    <string name="title_word_add">단어 추가</string>
+    <string name="title_word_edit">단어 수정</string>
+
+    <string name="hint_word">단어</string>
+    <string name="hint_meaning">뜻</string>
+
+    <string name="btn_add">추가</string>
+    <string name="btn_edit">수정</string>
+
+    <string name="desc_word_image">단어 이미지</string>
+    <string name="desc_delete_button">단어 삭제</string>
+    <string name="desc_edit_button">단어 수정</string>
+    <string name="desc_add_floating_button">새 단어 추가</string>
 </resources>
