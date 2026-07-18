@@ -5,13 +5,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 
 class WordAdapter(
-    private val items: List<WordItem>,
     private val onItemClick: (WordItem) -> Unit
-) : RecyclerView.Adapter<WordAdapter.ViewHolder>() {
+) : ListAdapter<WordItem, WordAdapter.ViewHolder>(WordDiffCallback) {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val img: ImageView = view.findViewById(R.id.iv_item_image)
@@ -26,12 +27,20 @@ class WordAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = items[position]
+        val item = getItem(position)
         holder.txtWord.text = item.word
         holder.txtMeaning.text = item.meaning
         holder.img.load(item.imageUri)
         holder.itemView.setOnClickListener { onItemClick(item) }
     }
 
-    override fun getItemCount(): Int = items.size
+    companion object WordDiffCallback : DiffUtil.ItemCallback<WordItem>() {
+        override fun areItemsTheSame(oldItem: WordItem, newItem: WordItem): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: WordItem, newItem: WordItem): Boolean {
+            return oldItem == newItem
+        }
+    }
 }

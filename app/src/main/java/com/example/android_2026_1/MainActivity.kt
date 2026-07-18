@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -17,10 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
-    private val wordList = mutableListOf<WordItem>()
-    private var idCount = 0
-    private var selectedItem: WordItem? = null
-
+    private val viewModel: MainViewModel by viewModels()
     private lateinit var adapter: WordAdapter
     private lateinit var topWord: TextView
     private lateinit var topMeaning: TextView
@@ -37,28 +35,11 @@ class MainActivity : AppCompatActivity() {
             val uri = data?.getStringExtra("imageUri")
 
             when (mode) {
-                "ADD" -> {
-                    val newItem = WordItem(idCount++, word, meaning, uri)
-                    wordList.add(newItem)
-                    adapter.notifyItemInserted(wordList.size - 1)
-                }
-                "EDIT" -> {
+                MODE_ADD -> viewModel.addWord(word, meaning, uri)
+                MODE_EDIT -> {
                     val id = data?.getIntExtra("id", -1) ?: -1
-                    val index = wordList.indexOfFirst { it.id == id }
-                    if (index != -1) {
-                        val updated = WordItem(id, word, meaning, uri)
-                        wordList[index] = updated
-                        adapter.notifyItemChanged(index)
-
-                        if (selectedItem?.id == id) {
-                            showPreview(updated)
-                        }
-                    }
+                    viewModel.editWord(id, word, meaning, uri)
                 }
-            }
-
-            if (wordList.isEmpty()) {
-                clearPreview()
             }
         }
     }
@@ -82,10 +63,8 @@ class MainActivity : AppCompatActivity() {
         val btnAdd = findViewById<FloatingActionButton>(R.id.btn_add)
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
 
-        clearPreview()
-
-        adapter = WordAdapter(wordList) { clickedItem ->
-            showPreview(clickedItem)
+        adapter = WordAdapter { clickedItem ->
+            viewModel.selectItem(clickedItem)
         }
 
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -93,15 +72,15 @@ class MainActivity : AppCompatActivity() {
 
         btnAdd.setOnClickListener {
             val intent = Intent(this, WordEditActivity::class.java).apply {
-                putExtra("mode", "ADD")
+                putExtra("mode", MODE_ADD)
             }
             editLauncher.launch(intent)
         }
 
         btnEdit.setOnClickListener {
-            selectedItem?.let { item ->
+            viewModel.selectedWord.value?.let { item ->
                 val intent = Intent(this, WordEditActivity::class.java).apply {
-                    putExtra("mode", "EDIT")
+                    putExtra("mode", MODE_EDIT)
                     putExtra("item", item)
                 }
                 editLauncher.launch(intent)
@@ -109,28 +88,36 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnDelete.setOnClickListener {
-            selectedItem?.let { item ->
-                val index = wordList.indexOfFirst { it.id == item.id }
-                if (index != -1) {
-                    wordList.removeAt(index)
-                    adapter.notifyItemRemoved(index)
-                    clearPreview()
-                }
-            }
+            viewModel.deleteWord()
+        }
+
+        viewModel.wordList.observe(this) { newList ->
+            adapter.submitList(newList)
+        }
+
+        viewModel.selectedWord.observe(this) { item ->
+            updatePreview(item)
         }
     }
 
-    private fun showPreview(item: WordItem) {
-        selectedItem = item
-        topWord.text = item.word
-        topMeaning.text = item.meaning
-        topImage.load(item.imageUri)
+    private fun updatePreview(item: WordItem?) {
+        if (item != null) {
+            topWord.text = item.word
+            topMeaning.text = item.meaning
+            if (item.imageUri != null) {
+                topImage.load(item.imageUri)
+            } else {
+                topImage.setImageDrawable(null)
+            }
+        } else {
+            topWord.text = ""
+            topMeaning.text = ""
+            topImage.setImageDrawable(null)
+        }
     }
 
-    private fun clearPreview() {
-        topWord.text = ""
-        topMeaning.text = ""
-        topImage.setImageDrawable(null)
-        selectedItem = null
+    companion object {
+        const val MODE_ADD = "ADD"
+        const val MODE_EDIT = "EDIT"
     }
 }
