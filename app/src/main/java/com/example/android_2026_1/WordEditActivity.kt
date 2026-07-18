@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import coil.load
+import coil.dispose
 import com.example.android_2026_1.databinding.ActivityWordEditBinding
 
 class WordEditActivity : AppCompatActivity() {
@@ -35,16 +36,25 @@ class WordEditActivity : AppCompatActivity() {
         binding.isEdit = isEdit
 
         if (isEdit) {
-            intent.getParcelableExtra<WordItem>("item")?.let { item ->
+            val item = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra("item", WordItem::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getParcelableExtra<WordItem>("item")
+            }
+
+            item?.let { item ->
                 editId = item.id
                 imageUri = item.imageUri
                 binding.item = item
                 if (item.imageUri == null) {
+                    binding.btnImage.dispose()
                     binding.btnImage.setImageResource(android.R.drawable.ic_input_add)
                 }
             }
         } else {
             imageUri = null
+            binding.btnImage.dispose()
             binding.btnImage.setImageResource(android.R.drawable.ic_input_add)
         }
 
@@ -53,11 +63,18 @@ class WordEditActivity : AppCompatActivity() {
         }
 
         binding.btnSubmit.setOnClickListener {
+            val wordText = binding.etWord.text.toString().trim()
+            val meaningText = binding.etMeaning.text.toString().trim()
+
+            if (wordText.isEmpty() || meaningText.isEmpty()) {
+                return@setOnClickListener
+            }
+
             val resultIntent = Intent().apply {
                 putExtra("mode", mode)
                 putExtra("id", editId)
-                putExtra("word", binding.etWord.text.toString())
-                putExtra("meaning", binding.etMeaning.text.toString())
+                putExtra("word", wordText)
+                putExtra("meaning", meaningText)
                 putExtra("imageUri", imageUri)
             }
             setResult(RESULT_OK, resultIntent)

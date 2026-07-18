@@ -21,17 +21,17 @@ class MainActivity : AppCompatActivity() {
     private val editLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val data = result.data
-            val mode = data?.getStringExtra("mode")
-            val word = data?.getStringExtra("word").orEmpty()
-            val meaning = data?.getStringExtra("meaning").orEmpty()
-            val uri = data?.getStringExtra("imageUri")
+        val data = result.data
+        if (data != null) {
+            val mode = data.getStringExtra("mode")
+            val word = data.getStringExtra("word").orEmpty()
+            val meaning = data.getStringExtra("meaning").orEmpty()
+            val uri = data.getStringExtra("imageUri")
 
             when (mode) {
                 MODE_ADD -> viewModel.addWord(word, meaning, uri)
                 MODE_EDIT -> {
-                    val id = data?.getIntExtra("id", -1) ?: -1
+                    val id = data.getIntExtra("id", -1)
                     viewModel.editWord(id, word, meaning, uri)
                 }
             }

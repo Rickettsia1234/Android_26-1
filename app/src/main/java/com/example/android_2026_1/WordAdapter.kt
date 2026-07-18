@@ -1,37 +1,29 @@
 package com.example.android_2026_1
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import coil.load
+import com.example.android_2026_1.databinding.ItemWordBinding
 
 class WordAdapter(
     private val onItemClick: (WordItem) -> Unit
 ) : ListAdapter<WordItem, WordAdapter.ViewHolder>(WordDiffCallback) {
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val img: ImageView = view.findViewById(R.id.iv_item_image)
-        val txtWord: TextView = view.findViewById(R.id.tv_item_word)
-        val txtMeaning: TextView = view.findViewById(R.id.tv_item_meaning)
-    }
+    class ViewHolder(val binding: ItemWordBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_word, parent, false)
-        return ViewHolder(view)
+        val layoutInflater = LayoutInflater.from(parent.context)
+        val binding = ItemWordBinding.inflate(layoutInflater, parent, false)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.txtWord.text = item.word
-        holder.txtMeaning.text = item.meaning
-        holder.img.load(item.imageUri)
-        holder.itemView.setOnClickListener { onItemClick(item) }
+        holder.binding.item = item
+        holder.binding.root.setOnClickListener { onItemClick(item) }
+        holder.binding.executePendingBindings()
     }
 
     companion object WordDiffCallback : DiffUtil.ItemCallback<WordItem>() {

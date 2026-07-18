@@ -1,16 +1,17 @@
 plugins {
     alias(libs.plugins.android.application)
     id("kotlin-parcelize")
+    alias(libs.plugins.android.legacy.kapt)
 }
 
 android {
     namespace = "com.example.android_2026_1"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.android_2026_1"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
