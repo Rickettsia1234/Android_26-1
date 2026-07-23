@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">android_2026_1</string>
+    <string name="app_name">스팀_api_테스트</string>
+    <string name="btn_news">"게임 뉴스"</string>
 </resources>
