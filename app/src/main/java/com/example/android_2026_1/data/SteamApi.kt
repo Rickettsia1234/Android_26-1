@@ -1,16 +1,13 @@
-package com.example.android_2026_1
+package com.example.android_2026_1.data
 
 import com.google.gson.annotations.SerializedName
 import okhttp3.ResponseBody
-import org.xmlpull.v1.XmlPullParser
-import org.xmlpull.v1.XmlPullParserFactory
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
 import retrofit2.http.Query
-import java.io.StringReader
 
 data class SteamNewsResponse(
     @SerializedName(SteamApiService.KEY_APP_NEWS) val appNews: AppNews?

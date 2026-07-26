@@ -1,7 +1,12 @@
-package com.example.android_2026_1
+package com.example.android_2026_1.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.android_2026_1.util.AppLogger
+import com.example.android_2026_1.R
+import com.example.android_2026_1.data.RetrofitClient
+import com.example.android_2026_1.data.UserProfile
+import com.example.android_2026_1.data.XmlParserUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +35,9 @@ class ProfileViewModel : ViewModel() {
         private const val TAG = "ProfileViewModel"
         private const val BASE_PROFILE_URL = "https://steamcommunity.com/profiles/"
         private const val BASE_CUSTOM_ID_URL = "https://steamcommunity.com/id/"
+        private const val PATH_CUSTOM_ID = "steamcommunity.com/id/"
+        private const val PATH_PROFILE_ID = "steamcommunity.com/profiles/"
+        private const val HTTP_TOO_MANY_REQUESTS = 429
     }
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -76,10 +84,10 @@ class ProfileViewModel : ViewModel() {
 
     private fun extractIdFromQuery(rawQuery: String): String {
         var cleaned = rawQuery.trim().removeSuffix("/")
-        if (cleaned.contains("steamcommunity.com/id/")) {
-            cleaned = cleaned.substringAfter("steamcommunity.com/id/")
-        } else if (cleaned.contains("steamcommunity.com/profiles/")) {
-            cleaned = cleaned.substringAfter("steamcommunity.com/profiles/")
+        if (cleaned.contains(PATH_CUSTOM_ID)) {
+            cleaned = cleaned.substringAfter(PATH_CUSTOM_ID)
+        } else if (cleaned.contains(PATH_PROFILE_ID)) {
+            cleaned = cleaned.substringAfter(PATH_PROFILE_ID)
         }
         return cleaned.substringAfterLast("/")
     }
@@ -160,7 +168,7 @@ class ProfileViewModel : ViewModel() {
             ApiResult(profile = XmlParserUtils.parseUserInfo(xmlString))
         } catch (e: HttpException) {
             AppLogger.e(TAG, "Error fetching user profile", e)
-            if (e.code() == 429) {
+            if (e.code() == HTTP_TOO_MANY_REQUESTS) {
                 ApiResult(isTooManyRequests = true)
             } else {
                 ApiResult()

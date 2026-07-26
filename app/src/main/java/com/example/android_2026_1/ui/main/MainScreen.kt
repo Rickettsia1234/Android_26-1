@@ -1,4 +1,4 @@
-package com.example.android_2026_1
+package com.example.android_2026_1.ui.main
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.android_2026_1.R
+import com.example.android_2026_1.ui.news.NewsRoute
+import com.example.android_2026_1.ui.profile.ProfileRoute
 
 @Composable
 fun MainRoute(

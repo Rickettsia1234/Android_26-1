@@ -1,4 +1,4 @@
-package com.example.android_2026_1
+package com.example.android_2026_1.ui.profile
 
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -39,6 +39,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.android_2026_1.R
+import com.example.android_2026_1.data.UserProfile
 
 @Composable
 fun ProfileRoute(

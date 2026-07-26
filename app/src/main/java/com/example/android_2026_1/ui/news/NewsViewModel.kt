@@ -1,7 +1,11 @@
-package com.example.android_2026_1
+package com.example.android_2026_1.ui.news
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.android_2026_1.util.AppLogger
+import com.example.android_2026_1.data.NewsItem
+import com.example.android_2026_1.data.RetrofitClient
+import com.example.android_2026_1.data.SteamAppItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
