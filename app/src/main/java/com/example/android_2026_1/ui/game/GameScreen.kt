@@ -211,12 +211,12 @@ private fun DetailInfoCard(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = item.title,
+                text = stringResource(item.titleRes),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = item.content,
+                text = item.content.asString(),
                 style = MaterialTheme.typography.bodyMedium
             )
         }
