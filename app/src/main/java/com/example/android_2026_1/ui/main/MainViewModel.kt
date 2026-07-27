@@ -9,6 +9,7 @@ sealed interface Screen {
     object Home : Screen
     object News : Screen
     object Profile : Screen
+    object Game : Screen
 }
 
 data class MainUiState(

@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.android_2026_1.R
 import com.example.android_2026_1.ui.news.NewsRoute
 import com.example.android_2026_1.ui.profile.ProfileRoute
+import com.example.android_2026_1.ui.game.GameRoute
 
 @Composable
 fun MainRoute(
@@ -47,6 +48,7 @@ fun MainScreen(
             HomeScreen(
                 onNavigateToNews = { onEvent(MainEvent.NavigateTo(Screen.News)) },
                 onNavigateToProfile = { onEvent(MainEvent.NavigateTo(Screen.Profile)) },
+                onNavigateToGame = { onEvent(MainEvent.NavigateTo(Screen.Game)) },
                 modifier = modifier
             )
         }
@@ -62,6 +64,12 @@ fun MainScreen(
             }
             ProfileRoute(modifier = modifier)
         }
+        is Screen.Game -> {
+            BackHandler {
+                onEvent(MainEvent.NavigateTo(Screen.Home))
+            }
+            GameRoute(modifier = modifier)
+        }
     }
 }
 
@@ -69,6 +77,7 @@ fun MainScreen(
 private fun HomeScreen(
     onNavigateToNews: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToGame: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
@@ -87,6 +96,12 @@ private fun HomeScreen(
 
             Button(onClick = onNavigateToProfile) {
                 Text(text = stringResource(R.string.btn_profile))
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(onClick = onNavigateToGame) {
+                Text(text = stringResource(R.string.btn_game))
             }
         }
     }
