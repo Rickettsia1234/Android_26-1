@@ -43,6 +43,10 @@ fun MainScreen(
     onEvent: (MainEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    BackHandler(enabled = uiState.currentScreen !is Screen.Home) {
+        onEvent(MainEvent.NavigateTo(Screen.Home))
+    }
+
     when (uiState.currentScreen) {
         is Screen.Home -> {
             HomeScreen(
@@ -53,21 +57,12 @@ fun MainScreen(
             )
         }
         is Screen.News -> {
-            BackHandler {
-                onEvent(MainEvent.NavigateTo(Screen.Home))
-            }
             NewsRoute(modifier = modifier)
         }
         is Screen.Profile -> {
-            BackHandler {
-                onEvent(MainEvent.NavigateTo(Screen.Home))
-            }
             ProfileRoute(modifier = modifier)
         }
         is Screen.Game -> {
-            BackHandler {
-                onEvent(MainEvent.NavigateTo(Screen.Home))
-            }
             GameRoute(modifier = modifier)
         }
     }
@@ -86,7 +81,7 @@ private fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(16.dp, alignment = Alignment.CenterVertically)
         ) {
             Button(onClick = onNavigateToNews) {
                 Text(text = stringResource(R.string.btn_news))
