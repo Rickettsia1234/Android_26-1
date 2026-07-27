@@ -1,7 +1,11 @@
 package com.example.android_2026_1.ui.game
 
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.android_2026_1.R
 import com.example.android_2026_1.data.RetrofitClient
 import com.example.android_2026_1.data.SteamAppDetailsData
 import com.example.android_2026_1.data.SteamAppItem
@@ -14,9 +18,25 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
+sealed interface UiText {
+    data class DynamicString(val value: String) : UiText
+    class StringResource(
+        @StringRes val resId: Int,
+        vararg val args: Any
+    ) : UiText
+
+    @Composable
+    fun asString(): String {
+        return when (this) {
+            is DynamicString -> value
+            is StringResource -> stringResource(resId, *args)
+        }
+    }
+}
+
 data class GameCardItem(
-    val title: String,
-    val content: String
+    @StringRes val titleRes: Int,
+    val content: UiText
 )
 
 data class GameUiState(
@@ -40,17 +60,6 @@ class GameViewModel : ViewModel() {
         private const val TAG = "GameViewModel"
 
         const val EMPTY_STRING = ""
-        private const val NO_INFO = "정보 없음"
-        private const val PLAYER_UNIT = "명"
-        private const val FREE_TO_PLAY = "무료 플레이"
-        private const val NO_PRICE_INFO = "가격 정보 없음"
-        private const val NO_DESCRIPTION = "설명 없음"
-        private const val TITLE_PLAYER_COUNT = "실시간 동시 접속자 수"
-        private const val TITLE_PRICE = "가격 및 세일 정보"
-        private const val TITLE_DESCRIPTION = "게임 설명"
-        private const val TITLE_DEVELOPERS = "개발사"
-        private const val TITLE_PUBLISHERS = "배급사"
-        private const val TITLE_GENRES = "장르"
         private const val DELIMITER_COMMA = ", "
 
         private const val LOG_ERROR_SEARCH_APPS = "Error searching apps"
@@ -119,12 +128,13 @@ class GameViewModel : ViewModel() {
                 val appDetails = result[appId.toString()]
                 val details = appDetails?.data
 
-                var playerCount = NO_INFO
+                var playerCount: UiText = UiText.StringResource(R.string.no_info)
                 try {
                     val countResponse = SteamExtraClient.statsService.getNumberOfCurrentPlayers(appId)
                     val count = countResponse.response?.playerCount
                     if (count != null) {
-                        playerCount = "${NumberFormat.getNumberInstance(Locale.US).format(count)}$PLAYER_UNIT"
+                        val formattedCount = NumberFormat.getNumberInstance(Locale.US).format(count)
+                        playerCount = UiText.StringResource(R.string.player_unit, formattedCount)
                     }
                 } catch (e: Exception) {
                     AppLogger.e(TAG, LOG_ERROR_LOADING_PLAYER_COUNT, e)
@@ -175,36 +185,60 @@ class GameViewModel : ViewModel() {
         }
     }
 
-    private fun buildCards(details: SteamAppDetailsData, playerCount: String): List<GameCardItem> {
+    private fun buildCards(details: SteamAppDetailsData, playerCount: UiText): List<GameCardItem> {
         val list = mutableListOf<GameCardItem>()
 
-        list.add(GameCardItem(TITLE_PLAYER_COUNT, playerCount))
+        list.add(GameCardItem(R.string.title_player_count, playerCount))
 
-        val price = when {
-            details.isFree == true -> FREE_TO_PLAY
+        val price: UiText = when {
+            details.isFree == true -> UiText.StringResource(R.string.free_to_play)
             details.priceOverview != null -> {
                 val po = details.priceOverview
                 if ((po.discountPercent ?: 0) > 0) {
-                    "${po.discountPercent}% 할인 (${po.initialFormatted ?: EMPTY_STRING} -> ${po.finalFormatted ?: EMPTY_STRING})"
+                    UiText.StringResource(
+                        R.string.discount_format,
+                        po.discountPercent ?: 0,
+                        po.initialFormatted ?: EMPTY_STRING,
+                        po.finalFormatted ?: EMPTY_STRING
+                    )
                 } else {
-                    po.finalFormatted ?: NO_PRICE_INFO
+                    po.finalFormatted?.let { UiText.DynamicString(it) } ?: UiText.StringResource(R.string.no_price_info)
                 }
             }
-            else -> NO_PRICE_INFO
+            else -> UiText.StringResource(R.string.no_price_info)
         }
-        list.add(GameCardItem(TITLE_PRICE, price))
+        list.add(GameCardItem(R.string.title_price, price))
 
-        val desc = details.shortDescription?.ifBlank { NO_DESCRIPTION } ?: NO_DESCRIPTION
-        list.add(GameCardItem(TITLE_DESCRIPTION, desc))
+        val desc: UiText = if (!details.shortDescription.isNullOrBlank()) {
+            UiText.DynamicString(details.shortDescription)
+        } else {
+            UiText.StringResource(R.string.no_description)
+        }
+        list.add(GameCardItem(R.string.title_description, desc))
 
-        val devs = details.developers?.joinToString(DELIMITER_COMMA)?.ifBlank { NO_INFO } ?: NO_INFO
-        list.add(GameCardItem(TITLE_DEVELOPERS, devs))
+        val devsString = details.developers?.joinToString(DELIMITER_COMMA)
+        val devs: UiText = if (!devsString.isNullOrBlank()) {
+            UiText.DynamicString(devsString)
+        } else {
+            UiText.StringResource(R.string.no_info)
+        }
+        list.add(GameCardItem(R.string.title_developers, devs))
 
-        val pubs = details.publishers?.joinToString(DELIMITER_COMMA)?.ifBlank { NO_INFO } ?: NO_INFO
-        list.add(GameCardItem(TITLE_PUBLISHERS, pubs))
+        val pubsString = details.publishers?.joinToString(DELIMITER_COMMA)
+        val pubs: UiText = if (!pubsString.isNullOrBlank()) {
+            UiText.DynamicString(pubsString)
+        } else {
+            UiText.StringResource(R.string.no_info)
+        }
+        list.add(GameCardItem(R.string.title_publishers, pubs))
 
-        val genres = details.genres?.mapNotNull { it.description }?.joinToString(DELIMITER_COMMA)?.ifBlank { NO_INFO } ?: NO_INFO
-        list.add(GameCardItem(TITLE_GENRES, genres))
+        val genresString = details.genres?.mapNotNull { it.description }?.joinToString(DELIMITER_COMMA)
+        val genres: UiText = if (!genresString.isNullOrBlank()) {
+            UiText.DynamicString(genresString)
+        } else {
+            UiText.StringResource(R.string.no_info)
+        }
+        list.add(GameCardItem(R.string.title_genres, genres))
 
         return list
     }

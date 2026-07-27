@@ -26,4 +26,17 @@
     <string name="btn_game">게임 정보</string>
 
     <string name="btn_achievement">도전과제</string>
+
+    <string name="no_info">정보 없음</string>
+    <string name="player_unit">%1$s명</string>
+    <string name="free_to_play">무료 플레이</string>
+    <string name="no_price_info">가격 정보 없음</string>
+    <string name="no_description">설명 없음</string>
+    <string name="title_player_count">실시간 동시 접속자 수</string>
+    <string name="title_price">가격 및 세일 정보</string>
+    <string name="title_description">게임 설명</string>
+    <string name="title_developers">개발사</string>
+    <string name="title_publishers">배급사</string>
+    <string name="title_genres">장르</string>
+    <string name="discount_format">%1$d%% 할인 (%2$s -&gt; %3$s)</string>
 </resources>
