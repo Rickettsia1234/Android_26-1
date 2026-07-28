@@ -210,7 +210,10 @@ private fun NewsList(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(newsList) { item ->
+        items(
+            items = newsList,
+            key = { item -> item.url }
+        ) { item ->
             NewsCard(
                 item = item,
                 showImg = showImg,
