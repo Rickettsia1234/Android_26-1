@@ -299,7 +299,7 @@ private fun SettingsDialog(
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = empty, onCheckedChange = { empty = it })
-                    Text("기타 (빈 값)")
+                    Text(stringResource(R.string.news_type_empty))
                 }
             }
         },

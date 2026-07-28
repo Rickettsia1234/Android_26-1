@@ -9,6 +9,7 @@
     <string name="news_type_title">뉴스 종류</string>
     <string name="news_type_dev">제작자 공지</string>
     <string name="news_type_external">외부 언론사 뉴스</string>
+    <string name="news_type_empty">기타 (빈 값)</string>
     <string name="btn_cancel">취소</string>
     <string name="btn_apply">적용</string>
     <string name="cd_search">검색</string>
