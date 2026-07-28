@@ -1,6 +1,5 @@
 package com.example.android_2026_1.ui.main
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,59 +10,51 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.android_2026_1.R
+import com.example.android_2026_1.ui.game.GameRoute
 import com.example.android_2026_1.ui.news.NewsRoute
 import com.example.android_2026_1.ui.profile.ProfileRoute
-import com.example.android_2026_1.ui.game.GameRoute
 
-@Composable
-fun MainRoute(
-    modifier: Modifier = Modifier,
-    viewModel: MainViewModel = viewModel()
-) {
-    val uiState by viewModel.uiState.collectAsState()
-
-    MainScreen(
-        uiState = uiState,
-        onEvent = viewModel::onEvent,
-        modifier = modifier
-    )
+sealed class Screen(val route: String) {
+    object Home : Screen("home")
+    object News : Screen("news")
+    object Profile : Screen("profile")
+    object Game : Screen("game")
 }
 
 @Composable
-fun MainScreen(
-    uiState: MainUiState,
-    onEvent: (MainEvent) -> Unit,
+fun MainRoute(
     modifier: Modifier = Modifier
 ) {
-    BackHandler(enabled = uiState.currentScreen !is Screen.Home) {
-        onEvent(MainEvent.NavigateTo(Screen.Home))
-    }
+    val navController = rememberNavController()
 
-    when (uiState.currentScreen) {
-        is Screen.Home -> {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Home.route,
+        modifier = modifier
+    ) {
+        composable(Screen.Home.route) {
             HomeScreen(
-                onNavigateToNews = { onEvent(MainEvent.NavigateTo(Screen.News)) },
-                onNavigateToProfile = { onEvent(MainEvent.NavigateTo(Screen.Profile)) },
-                onNavigateToGame = { onEvent(MainEvent.NavigateTo(Screen.Game)) },
-                modifier = modifier
+                onNavigateToNews = { navController.navigate(Screen.News.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                onNavigateToGame = { navController.navigate(Screen.Game.route) }
             )
         }
-        is Screen.News -> {
-            NewsRoute(modifier = modifier)
+        composable(Screen.News.route) {
+            NewsRoute()
         }
-        is Screen.Profile -> {
-            ProfileRoute(modifier = modifier)
+        composable(Screen.Profile.route) {
+            ProfileRoute()
         }
-        is Screen.Game -> {
-            GameRoute(modifier = modifier)
+        composable(Screen.Game.route) {
+            GameRoute()
         }
     }
 }
