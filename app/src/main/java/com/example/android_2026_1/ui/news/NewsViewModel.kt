@@ -8,7 +8,10 @@ import com.example.android_2026_1.util.AppLogger
 import com.example.android_2026_1.data.NewsItem
 import com.example.android_2026_1.data.RetrofitClient
 import com.example.android_2026_1.data.SteamAppItem
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -35,7 +38,7 @@ data class NewsUiState(
 sealed interface NewsEvent {
     data class TextChanged(val text: String) : NewsEvent
     data class SelectItem(val name: String) : NewsEvent
-    object Search : NewsEvent
+    data object Search : NewsEvent
     data class UpdateSettings(
         val showImg: Boolean,
         val dev: Boolean,
@@ -49,6 +52,8 @@ class NewsViewModel : ViewModel() {
     companion object {
         private const val TAG = "NewsViewModel"
         private const val FEED_DEV_ANNOUNCEMENT = "steam_community_announcements"
+
+        private const val SEARCH_DEBOUNCE_MILLIS = 300L
     }
 
     private val _uiState = MutableStateFlow(NewsUiState())
@@ -70,20 +75,27 @@ class NewsViewModel : ViewModel() {
         }
     }
 
+    private var searchJob: Job? = null
+
     private fun onTextChange(newText: String) {
         _uiState.update { it.copy(text = newText) }
+
+        searchJob?.cancel()
+
         if (newText.isEmpty()) {
             _uiState.update { it.copy(suggestions = emptyList()) }
             return
         }
 
-        viewModelScope.launch {
+        searchJob = viewModelScope.launch {
+            delay(SEARCH_DEBOUNCE_MILLIS)
             try {
                 val result = RetrofitClient.storeService.searchApps(newText)
                 _uiState.update {
                     it.copy(suggestions = result.items ?: emptyList())
                 }
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 AppLogger.e(TAG, "Error searching apps", e)
                 _uiState.update { it.copy(suggestions = emptyList()) }
             }
