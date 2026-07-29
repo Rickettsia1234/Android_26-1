@@ -103,22 +103,42 @@ class NewsViewModel : ViewModel() {
     }
 
     private fun selectItem(name: String) {
+        val selectedApp = _uiState.value.suggestions.firstOrNull { it.name == name }
         _uiState.update { it.copy(text = name, suggestions = emptyList()) }
+
+        if (selectedApp != null) {
+            searchNewsByAppId(selectedApp.id)
+        } else {
+            doSearch()
+        }
     }
 
     private fun doSearch() {
         val query = _uiState.value.text
         if (query.isEmpty()) return
 
+        val currentSuggestions = _uiState.value.suggestions
         _uiState.update { it.copy(isLoading = true, suggestions = emptyList()) }
 
         viewModelScope.launch {
-            val appId = findAppId(query)
+            val cachedApp = currentSuggestions.firstOrNull {
+                it.name.equals(query, ignoreCase = true)
+            }
+
+            val appId = cachedApp?.id ?: findAppId(query)
             rawNewsList = if (appId != null) {
                 loadNews(appId)
             } else {
                 emptyList()
             }
+            applyFilter()
+        }
+    }
+
+    private fun searchNewsByAppId(appId: Int) {
+        _uiState.update { it.copy(isLoading = true, suggestions = emptyList()) }
+        viewModelScope.launch {
+            rawNewsList = loadNews(appId)
             applyFilter()
         }
     }
@@ -129,7 +149,7 @@ class NewsViewModel : ViewModel() {
             val matchedGame = response.items?.firstOrNull()
             matchedGame?.id
         } catch (e: Exception) {
-            AppLogger.e(TAG, "Error finding appId", e)
+            AppLogger.e("NewsViewModel", "Error finding appId", e)
             null
         }
     }
