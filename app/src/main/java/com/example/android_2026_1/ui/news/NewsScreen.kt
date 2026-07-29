@@ -202,7 +202,7 @@ private fun NewsSearchBar(
 
 @Composable
 private fun NewsList(
-    newsList: List<NewsItem>,
+    newsList: List<NewsUiItem>,
     showImg: Boolean,
     onNewsClick: (String) -> Unit
 ) {
@@ -212,12 +212,12 @@ private fun NewsList(
     ) {
         items(
             items = newsList,
-            key = { item -> item.url }
-        ) { item ->
+            key = { uiItem -> uiItem.item.url }
+        ) { uiItem ->
             NewsCard(
-                item = item,
+                uiItem = uiItem,
                 showImg = showImg,
-                onClick = { onNewsClick(item.url) }
+                onClick = { onNewsClick(uiItem.item.url) }
             )
         }
     }
@@ -225,7 +225,7 @@ private fun NewsList(
 
 @Composable
 private fun NewsCard(
-    item: NewsItem,
+    uiItem: NewsUiItem,
     showImg: Boolean,
     onClick: () -> Unit
 ) {
@@ -238,10 +238,9 @@ private fun NewsCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val imgUrl = ImageUtils.extractImageUrl(item.contents)
-            if (showImg && imgUrl != null) {
+            if (showImg && uiItem.imageUrl != null) {
                 AsyncImage(
-                    model = imgUrl,
+                    model = uiItem.imageUrl,
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -251,12 +250,12 @@ private fun NewsCard(
                 )
             }
             Text(
-                text = item.title,
+                text = uiItem.item.title,
                 style = MaterialTheme.typography.titleMedium
             )
-            if (item.author.isNotEmpty()) {
+            if (uiItem.item.author.isNotEmpty()) {
                 Text(
-                    text = item.author,
+                    text = uiItem.item.author,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

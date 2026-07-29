@@ -2,19 +2,26 @@ package com.example.android_2026_1.ui.news
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.android_2026_1.data.ImageUtils
 import com.example.android_2026_1.util.AppLogger
 import com.example.android_2026_1.data.NewsItem
 import com.example.android_2026_1.data.RetrofitClient
 import com.example.android_2026_1.data.SteamAppItem
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+data class NewsUiItem(
+    val item: NewsItem,
+    val imageUrl: String?
+)
+
 data class NewsUiState(
     val text: String = "",
     val suggestions: List<SteamAppItem> = emptyList(),
-    val newsList: List<NewsItem> = emptyList(),
+    val newsList: List<NewsUiItem> = emptyList(),
     val isLoading: Boolean = false,
     val showImg: Boolean = true,
     val dev: Boolean = true,
@@ -124,14 +131,22 @@ class NewsViewModel : ViewModel() {
 
     private fun applyFilter() {
         val state = _uiState.value
-        val filtered = rawNewsList.filter { item ->
-            val isDev = item.feedname == FEED_DEV_ANNOUNCEMENT
-            val isEmpty = item.feedname.isNullOrEmpty()
-            val isExternal = !isEmpty && !isDev
+        viewModelScope.launch(Dispatchers.Default) {
+            val filtered = rawNewsList.filter { item ->
+                val isDev = item.feedname == FEED_DEV_ANNOUNCEMENT
+                val isEmpty = item.feedname.isNullOrEmpty()
+                val isExternal = !isEmpty && !isDev
 
-            (state.dev && isDev) || (state.showEmpty && isEmpty) || (state.external && isExternal)
+                (state.dev && isDev) || (state.showEmpty && isEmpty) || (state.external && isExternal)
+            }.map { item ->
+                NewsUiItem(
+                    item = item,
+                    imageUrl = ImageUtils.extractImageUrl(item.contents)
+                )
+            }
+
+            _uiState.update { it.copy(newsList = filtered, isLoading = false) }
         }
-        _uiState.update { it.copy(newsList = filtered, isLoading = false) }
     }
 
     private fun updateSettings(showImg: Boolean, dev: Boolean, external: Boolean, showEmpty: Boolean) {
