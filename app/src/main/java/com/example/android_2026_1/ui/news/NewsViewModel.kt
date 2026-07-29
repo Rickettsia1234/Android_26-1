@@ -1,5 +1,6 @@
 package com.example.android_2026_1.ui.news
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android_2026_1.data.ImageUtils
@@ -13,11 +14,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@Immutable
 data class NewsUiItem(
     val item: NewsItem,
     val imageUrl: String?
 )
 
+@Immutable
 data class NewsUiState(
     val text: String = "",
     val suggestions: List<SteamAppItem> = emptyList(),
