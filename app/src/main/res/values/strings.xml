@@ -40,4 +40,7 @@
     <string name="title_publishers">배급사</string>
     <string name="title_genres">장르</string>
     <string name="discount_format">%1$d%% 할인 (%2$s -&gt; %3$s)</string>
+
+    <string name="dashboard_title">Dashboard</string>
+    <string name="dashboard_subtitle">이동할 메뉴를 선택해주세요</string>
 </resources>

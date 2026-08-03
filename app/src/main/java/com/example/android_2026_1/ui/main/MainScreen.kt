@@ -2,20 +2,24 @@ package com.example.android_2026_1.ui.main
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
@@ -75,52 +79,79 @@ private fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp, alignment = Alignment.CenterVertically)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center
         ) {
-            Button(
-                onClick = onNavigateToNews,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp),
-                shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-            ) {
-                Text(
-                    text = stringResource(R.string.btn_news),
-                    fontSize = 18.sp,
-                    color = Color.White
-                )
-            }
+            Text(
+                text = stringResource(R.string.dashboard_title),
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
 
-            Button(
-                onClick = onNavigateToProfile,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp),
-                shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-            ) {
-                Text(
-                    text = stringResource(R.string.btn_profile),
-                    fontSize = 18.sp,
-                    color = Color.White
-                )
-            }
+            Text(
+                text = stringResource(R.string.dashboard_subtitle),
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
-            Button(
-                onClick = onNavigateToGame,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp),
-                shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-            ) {
+            Spacer(modifier = Modifier.height(32.dp))
+
+            MenuCard(
+                title = stringResource(R.string.btn_news),
+                onClick = onNavigateToNews
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            MenuCard(
+                title = stringResource(R.string.btn_profile),
+                onClick = onNavigateToProfile
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            MenuCard(
+                title = stringResource(R.string.btn_game),
+                onClick = onNavigateToGame
+            )
+        }
+    }
+}
+
+@Composable
+private fun MenuCard(
+    title: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(72.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+
+                Spacer(modifier = Modifier.width(16.dp))
+
                 Text(
-                    text = stringResource(R.string.btn_game),
+                    text = title,
                     fontSize = 18.sp,
-                    color = Color.White
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
