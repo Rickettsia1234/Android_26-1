@@ -1,5 +1,6 @@
 package com.example.android_2026_1.ui.profile
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android_2026_1.util.AppLogger
@@ -8,6 +9,7 @@ import com.example.android_2026_1.data.RetrofitClient
 import com.example.android_2026_1.data.UserProfile
 import com.example.android_2026_1.data.XmlParserUtils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -16,6 +18,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import retrofit2.HttpException
 
+@Immutable
 data class ProfileUiState(
     val text: String = "",
     val userProfile: UserProfile? = null,
@@ -26,7 +29,7 @@ data class ProfileUiState(
 
 sealed interface ProfileEvent {
     data class TextChanged(val text: String) : ProfileEvent
-    object Search : ProfileEvent
+    data object Search : ProfileEvent
 }
 
 class ProfileViewModel : ViewModel() {
@@ -54,11 +57,18 @@ class ProfileViewModel : ViewModel() {
         _uiState.update { it.copy(text = newText) }
     }
 
+
+    private var searchJob: Job? = null
+
+    private val profileCache = mutableMapOf<String, FetchResult>()
+
     private fun doSearch() {
         val rawQuery = _uiState.value.text.trim()
         if (rawQuery.isEmpty()) return
 
         val query = extractIdFromQuery(rawQuery)
+
+        searchJob?.cancel()
 
         _uiState.update {
             it.copy(
@@ -69,8 +79,22 @@ class ProfileViewModel : ViewModel() {
             )
         }
 
-        viewModelScope.launch {
+        if (profileCache.containsKey(query)) {
+            val cachedResult = profileCache[query]!!
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    userProfile = cachedResult.profile,
+                    profileUrl = cachedResult.url,
+                    errorMessageResId = cachedResult.errorMessageResId
+                )
+            }
+            return
+        }
+
+        searchJob = viewModelScope.launch {
             val result = fetchUserProfile(query)
+            profileCache[query] = result
             _uiState.update {
                 it.copy(
                     isLoading = false,

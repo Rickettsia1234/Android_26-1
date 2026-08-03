@@ -2,6 +2,7 @@ package com.example.android_2026_1.ui.game
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +12,9 @@ import com.example.android_2026_1.data.SteamAppDetailsData
 import com.example.android_2026_1.data.SteamAppItem
 import com.example.android_2026_1.data.SteamExtraClient
 import com.example.android_2026_1.util.AppLogger
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -21,7 +25,7 @@ import java.util.Locale
 sealed interface UiText {
     data class DynamicString(val value: String) : UiText
     class StringResource(
-        @StringRes val resId: Int,
+        @param:StringRes val resId: Int,
         vararg val args: Any
     ) : UiText
 
@@ -34,11 +38,13 @@ sealed interface UiText {
     }
 }
 
+@Immutable
 data class GameCardItem(
-    @StringRes val titleRes: Int,
+    @param:StringRes val titleRes: Int,
     val content: UiText
 )
 
+@Immutable
 data class GameUiState(
     val text: String = GameViewModel.EMPTY_STRING,
     val suggestions: List<SteamAppItem> = emptyList(),
@@ -51,7 +57,7 @@ data class GameUiState(
 sealed interface GameEvent {
     data class TextChanged(val text: String) : GameEvent
     data class SelectItem(val name: String) : GameEvent
-    object Search : GameEvent
+    data object Search : GameEvent
 }
 
 class GameViewModel : ViewModel() {
@@ -61,15 +67,25 @@ class GameViewModel : ViewModel() {
 
         const val EMPTY_STRING = ""
         private const val DELIMITER_COMMA = ", "
+        private const val SEARCH_DEBOUNCE_MILLIS = 300L
 
-        private const val LOG_ERROR_SEARCH_APPS = "Error searching apps"
-        private const val LOG_ERROR_LOADING_PLAYER_COUNT = "Error loading player count"
-        private const val LOG_ERROR_FETCHING_DETAILS = "Error fetching game details"
-        private const val LOG_ERROR_FINDING_APP_ID = "Error finding appId"
+        private const val LOG_ERROR_SEARCH_APPS = "앱 검색 중 오류 발생"
+        private const val LOG_ERROR_LOADING_PLAYER_COUNT = "동시 접속자 수 로딩 중 오류 발생"
+        private const val LOG_ERROR_FETCHING_DETAILS = "게임 상세 정보 조회 중 오류 발생"
+        private const val LOG_ERROR_FINDING_APP_ID = "앱 ID 검색 중 오류 발생"
     }
+
+    private data class GameSearchResultData(
+        val headerImage: String?,
+        val gameTitle: String?,
+        val detailCards: List<GameCardItem>
+    )
 
     private val _uiState = MutableStateFlow(GameUiState())
     val uiState = _uiState.asStateFlow()
+
+    private var searchJob: Job? = null
+    private val gameCache = mutableMapOf<String, GameSearchResultData>()
 
     fun onEvent(event: GameEvent) {
         when (event) {
@@ -81,17 +97,23 @@ class GameViewModel : ViewModel() {
 
     private fun onTextChange(newText: String) {
         _uiState.update { it.copy(text = newText) }
+
+        searchJob?.cancel()
+
         if (newText.isEmpty()) {
             _uiState.update { it.copy(suggestions = emptyList()) }
             return
         }
 
-        viewModelScope.launch {
+        searchJob = viewModelScope.launch {
+            delay(SEARCH_DEBOUNCE_MILLIS)
             try {
                 val result = RetrofitClient.storeService.searchApps(newText)
                 _uiState.update {
                     it.copy(suggestions = result.items ?: emptyList())
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 AppLogger.e(TAG, LOG_ERROR_SEARCH_APPS, e)
                 _uiState.update { it.copy(suggestions = emptyList()) }
@@ -101,17 +123,38 @@ class GameViewModel : ViewModel() {
 
     private fun selectItem(name: String) {
         _uiState.update { it.copy(text = name, suggestions = emptyList()) }
+        doSearch()
     }
 
     private fun doSearch() {
-        val query = _uiState.value.text
+        val query = _uiState.value.text.trim()
         if (query.isEmpty()) return
+
+        searchJob?.cancel()
+
+        if (gameCache.containsKey(query)) {
+            val cached = gameCache[query]!!
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    suggestions = emptyList(),
+                    headerImage = cached.headerImage,
+                    gameTitle = cached.gameTitle,
+                    detailCards = cached.detailCards
+                )
+            }
+            return
+        }
+
+        val cachedAppId = _uiState.value.suggestions.firstOrNull {
+            it.name.equals(query, ignoreCase = true)
+        }?.id
 
         _uiState.update { it.copy(isLoading = true, suggestions = emptyList()) }
 
-        viewModelScope.launch {
+        searchJob = viewModelScope.launch {
             try {
-                val appId = findAppId(query)
+                val appId = cachedAppId ?: findAppId(query)
                 if (appId == null) {
                     _uiState.update {
                         it.copy(
@@ -136,18 +179,27 @@ class GameViewModel : ViewModel() {
                         val formattedCount = NumberFormat.getNumberInstance(Locale.US).format(count)
                         playerCount = UiText.StringResource(R.string.player_unit, formattedCount)
                     }
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     AppLogger.e(TAG, LOG_ERROR_LOADING_PLAYER_COUNT, e)
                 }
 
                 if (details != null) {
                     val cards = buildCards(details, playerCount)
+                    val searchResultData = GameSearchResultData(
+                        headerImage = details.headerImage,
+                        gameTitle = details.name ?: query,
+                        detailCards = cards
+                    )
+                    gameCache[query] = searchResultData
+
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            headerImage = details.headerImage,
-                            gameTitle = details.name ?: query,
-                            detailCards = cards
+                            headerImage = searchResultData.headerImage,
+                            gameTitle = searchResultData.gameTitle,
+                            detailCards = searchResultData.detailCards
                         )
                     }
                 } else {
@@ -160,6 +212,8 @@ class GameViewModel : ViewModel() {
                         )
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 AppLogger.e(TAG, LOG_ERROR_FETCHING_DETAILS, e)
                 _uiState.update {
@@ -179,6 +233,8 @@ class GameViewModel : ViewModel() {
             val response = RetrofitClient.storeService.searchApps(query)
             val game = response.items?.firstOrNull()
             game?.id
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             AppLogger.e(TAG, LOG_ERROR_FINDING_APP_ID, e)
             null
