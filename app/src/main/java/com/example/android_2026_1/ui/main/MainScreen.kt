@@ -54,7 +54,7 @@ fun MainRoute(
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,
-        modifier = modifier
+        modifier = modifier,
     ) {
         composable(Screen.Home.route) {
             HomeScreen(
